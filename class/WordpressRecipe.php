@@ -98,6 +98,7 @@ class WordpressRecipe extends Recipe
         $this->setTask('scaffold', function() {
             return $this->scaffold();
         });
+
     }
 
 
@@ -133,8 +134,6 @@ class WordpressRecipe extends Recipe
         $this->execute('activatePlugins');
         $this->execute('displayInformations');
     }
-
-
 
 
 
