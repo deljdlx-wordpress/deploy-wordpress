@@ -99,6 +99,12 @@ class WordpressRecipe extends Recipe
             return $this->scaffold();
         });
 
+        /*
+            deployWordpress deploy files and configure wordpress
+        */
+        $this->setTask('deployWordpress', function() {
+            return $this->deployWordpress();
+        });
     }
 
 
@@ -108,12 +114,9 @@ class WordpressRecipe extends Recipe
 
         $this->upload(__DIR__ . '/../assets/wordpress/public/', '{{site_filepath}}');
 
-
         $this->echo('Working path : {{site_filepath}}');
         $this->cd('{{site_filepath}}');
 
-        $this->echo('Create configuration file');
-        $this->generateConfiguration();
 
         if(!$this->databaseExists()) {
             $this->echo('Create database ' .  $this->get('DB_NAME'));
@@ -122,6 +125,14 @@ class WordpressRecipe extends Recipe
             $this->echo('Database ' .  $this->get('DB_NAME') . 'exists');
         }
 
+        $this->deployWordpress();
+    }
+
+    public function deployWordpress()
+    {
+        $this->echo('Create configuration file');
+        $this->generateConfiguration();
+
         $this->echo('Composer install');
         $this->run('composer install', [
             'tty' => true
@@ -129,12 +140,18 @@ class WordpressRecipe extends Recipe
 
         $this->echo('Install wordpress');
         $this->execute('installWordpress');
+
+        $this->echo('Execute chmod');
         $this->execute('chmod');
+
+        $this->echo('Create .htaccess');
         $this->execute('buildHtaccess');
+
+        $this->echo('Activate all plugins');
         $this->execute('activatePlugins');
+
         $this->execute('displayInformations');
     }
-
 
 
 
@@ -146,6 +163,36 @@ class WordpressRecipe extends Recipe
             $this->get('DB_PASSWORD'),
             $this->get('DB_NAME')
         );
+    }
+
+    public function cloneTheme($gitUrl)
+    {
+        $this->cd('{{site_filepath}}/wp-content/themes');
+        $this->run('git clone ' . $gitUrl, [
+            'tty' => true
+        ]);
+    }
+
+    public function clonePlugin($gitUrl)
+    {
+        $this->cd('{{site_filepath}}/wp-content/plugins');
+        $this->run('git clone ' . $gitUrl, [
+            'tty' => true
+        ]);
+
+        $pathName = str_replace('.git', '', basename($gitUrl));
+
+        $this->composerInstall('{{site_filepath}}/wp-content/plugins/' . $pathName);
+
+        /*
+        if($this->isFile('{{site_filepath}}/wp-content/plugins/' . $pathName .'/composer.json')) {
+            $this->cd('{{site_filepath}}/wp-content/plugins/' . $pathName);
+            $this->run('composer install', [
+                'tty' => true
+            ]);
+        }
+        */
+
     }
 
 

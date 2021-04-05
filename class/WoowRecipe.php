@@ -45,7 +45,7 @@ class WoowRecipe extends WordpressRecipe
     public function installWoof($force = false)
     {
         if (!$this->isDir('{{site_filepath}}/wp-content/plugins/woof') && !$force) {
-            return $this->upload(__DIR__ . '/../assets/wordpress/plugins/woof', '{{site_filepath}}/wp-content/plugins');
+            return $this->clonePlugin('git@github.com:deljdlx/woof.git');
         }
     }
 
@@ -54,7 +54,7 @@ class WoowRecipe extends WordpressRecipe
 
         $this->installWoof($force);
         if (!$this->isDir('{{site_filepath}}/wp-content/plugins/woow') && !$force) {
-            $this->upload(__DIR__ . '/../assets/wordpress/plugins/woow', '{{site_filepath}}/wp-content/plugins');
+            return $this->clonePlugin('git@github.com:deljdlx/woow.git');
         }
     }
 
@@ -62,13 +62,26 @@ class WoowRecipe extends WordpressRecipe
     {
         $this->installWoow($force);
         if (!$this->isDir('{{site_filepath}}/wp-content/themes/woow-theme') && !$force) {
-            $this->upload(__DIR__ . '/../assets/wordpress/themes/woow-theme', '{{site_filepath}}/wp-content/themes');
+            // $this->upload(__DIR__ . '/../assets/wordpress/themes/woow-theme', '{{site_filepath}}/wp-content/themes');
+
+            $this->cd('{{site_filepath}}/wp-content/themes');
+            $this->run('git clone git@github.com:deljdlx/woow-theme.git', [
+                'tty' => true
+            ]);
+
+            /*
+            $this->cd('{{site_filepath}}/wp-content/themes/woow-theme');
+            $this->run('composer install', [
+                'tty' => true
+            ]);
+            */
         }
 
         $this->cd('{{site_filepath}}/wp-content/themes/woow-theme/assets/vuejs');
         $this->run('npm install', [
             'tty' => true
         ]);
+        $this->buildWoowTheme();
         $this->activateWoowTheme();
     }
 
@@ -108,6 +121,14 @@ class WoowRecipe extends WordpressRecipe
             'tty' => true
         ]);
 
+    }
+
+
+
+    public function installRequirements()
+    {
+        parent::installRequirements();
+        $this->installVue();
     }
 
 
