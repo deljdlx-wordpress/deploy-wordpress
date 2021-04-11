@@ -45,7 +45,28 @@ class WoowRecipe extends WordpressRecipe
     public function installWoof($force = false)
     {
         if (!$this->isDir('{{site_filepath}}/wp-content/plugins/woof') && !$force) {
-            return $this->clonePlugin('git@github.com:deljdlx/woof.git');
+            $this->clonePlugin('git@github.com:deljdlx/woof.git');
+        }
+        else {
+            $this->echo("woof package already present");
+            $this->echo("updating woof package");
+            $this->updatePlugin('woof');
+        }
+        if (!$this->isDir('{{site_filepath}}/wp-content/plugins/woof-model') && !$force) {
+            $this->clonePlugin('git@github.com:deljdlx/woof-model.git');
+        }
+        else {
+            $this->echo("woof-model package already present");
+            $this->echo("updating woof-them package");
+            $this->updatePlugin('woof-theme');
+        }
+        if (!$this->isDir('{{site_filepath}}/wp-content/plugins/woof-theme') && !$force) {
+            $this->clonePlugin('git@github.com:deljdlx/woof-theme.git');
+        }
+        else {
+            $this->echo("woof-theme package present");
+            $this->echo("updating woof-theme package");
+            $this->updatePlugin('woof-theme');
         }
     }
 

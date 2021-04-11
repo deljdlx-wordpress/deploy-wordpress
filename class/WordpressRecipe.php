@@ -120,6 +120,12 @@ class WordpressRecipe extends Recipe
 
         if(!$this->databaseExists()) {
             $this->echo('Create database ' .  $this->get('DB_NAME'));
+            $this->createBDD(
+                $this->get('DB_HOST'),
+                $this->get('DB_USER'),
+                $this->get('DB_PASSWORD'),
+                $this->get('DB_NAME')
+            );
         }
         else {
             $this->echo('Database ' .  $this->get('DB_NAME') . 'exists');
@@ -147,8 +153,8 @@ class WordpressRecipe extends Recipe
         $this->echo('Create .htaccess');
         $this->execute('buildHtaccess');
 
-        $this->echo('Activate all plugins');
-        $this->execute('activatePlugins');
+        // $this->echo('Activate all plugins');
+        // $this->execute('activatePlugins');
 
         $this->execute('displayInformations');
     }
@@ -171,6 +177,9 @@ class WordpressRecipe extends Recipe
         $this->run('git clone ' . $gitUrl, [
             'tty' => true
         ]);
+
+        $pathName = str_replace('.git', '', basename($gitUrl));
+        $this->composerInstall('{{site_filepath}}/wp-content/plugins/' . $pathName);
     }
 
     public function clonePlugin($gitUrl)
@@ -183,16 +192,14 @@ class WordpressRecipe extends Recipe
         $pathName = str_replace('.git', '', basename($gitUrl));
 
         $this->composerInstall('{{site_filepath}}/wp-content/plugins/' . $pathName);
+    }
 
-        /*
-        if($this->isFile('{{site_filepath}}/wp-content/plugins/' . $pathName .'/composer.json')) {
-            $this->cd('{{site_filepath}}/wp-content/plugins/' . $pathName);
-            $this->run('composer install', [
-                'tty' => true
-            ]);
-        }
-        */
-
+    public function updatePlugin($pluginPath)
+    {
+        $this->cd('{{site_filepath}}/wp-content/plugins/' . $pluginPath);
+        $this->run('git pull ', [
+            'tty' => true
+        ]);
     }
 
 
