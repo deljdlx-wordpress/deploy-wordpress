@@ -1,6 +1,6 @@
 <?php
 
-namespace Deljdlx\DeployWordpress;
+namespace Deljdlx\Deploy\Wordpress;
 
 class WoowRecipe extends WordpressRecipe
 {

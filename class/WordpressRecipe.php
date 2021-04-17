@@ -1,6 +1,6 @@
 <?php
 
-namespace Deljdlx\DeployWordpress;
+namespace Deljdlx\Deploy\Wordpress;
 
 use Deljdlx\Deploy\Recipe;
 use Deljdlx\Deploy\Traits\MySql;
@@ -252,7 +252,7 @@ define( 'NONCE_SALT',       '" . $this->get('NONCE_SALT') . "' );
     public function displayInformations()
     {
         $this->echo('Wordpress installed : ' . $this->get('WP_HOME'));
-        $this->echo('Backoffice : ' . $this->get('WP_HOME') .'/' . $this->get('WP_SOURCE_FOLDER') . '/wp-admin');
+        $this->echo('Backoffice : ' . rtrim($this->get('WP_HOME'), '/') . $this->get('WP_SOURCE_FOLDER') . '/wp-admin');
     }
 
     public function installWordpress($path, $home, $name, $login, $password, $email)
