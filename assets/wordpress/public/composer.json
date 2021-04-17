@@ -16,7 +16,9 @@
         "wpackagist-theme/twentytwentyone": "^1.0",
         "wpackagist-plugin/html-editor-syntax-highlighter": "*",
         "wpackagist-plugin/classic-editor": "*",
-        "wpackagist-plugin/jwt-auth": "*"
+        "wpackagist-plugin/jwt-auth": "*",
+        "wpackagist-plugin/user-role-editor": "*",
+        "wpackagist-plugin/fakerpress": "*"
 
     },
 
@@ -30,6 +32,7 @@
             "sudo find . -type f -exec chmod 664 {} +",
             "sudo find . -type d -exec chmod 774 {} +",
             "touch .htaccess",
+            "sudo chgrp www-data .htaccess",
             "sudo chmod 774 .htaccess"
         ],
 
