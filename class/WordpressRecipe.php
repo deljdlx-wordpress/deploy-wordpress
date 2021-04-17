@@ -132,6 +132,9 @@ class WordpressRecipe extends Recipe
         }
 
         $this->deployWordpress();
+
+        $this->echo('Generating gulp watch file into ' . getcwd());
+        $this->generateGulpWatch($this->get('WP_HOME'), getcwd());
     }
 
     public function deployWordpress()
@@ -239,6 +242,7 @@ define( 'NONCE_SALT',       '" . $this->get('NONCE_SALT') . "' );
         $this->write('{{site_filepath}}/configuration-current.php', $template);
         return $this;
     }
+
 
 
     public function activatePlugins()
