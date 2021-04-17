@@ -13,9 +13,11 @@ class WoowRecipe extends WordpressRecipe
         $this->setTask('installWoof', function() {
             return $this->installWoof();
         });
+
         $this->setTask('installWoow', function() {
             return $this->installWoow();
         });
+
         $this->setTask('installWoowTheme', function() {
             return $this->installWoowTheme();
         });
@@ -23,8 +25,6 @@ class WoowRecipe extends WordpressRecipe
         $this->setTask('activateWoowTheme', function() {
             return $this->activateWoowTheme();
         });
-
-
 
         $this->setTask('buildWoowTheme', function() {
             return $this->buildWoowTheme();
@@ -37,9 +37,11 @@ class WoowRecipe extends WordpressRecipe
         $this->setTask('buildAllWoow', function() {
             return $this->buildAllWoow();
         });
+
+        $this->setTask('createVueApplication', function() {
+            return $this->createVueApplication();
+        });
     }
-
-
 
 
     public function installWoof($force = false)
@@ -134,7 +136,6 @@ class WoowRecipe extends WordpressRecipe
 
 
 
-
     public function watchWoowTheme()
     {
         $this->cd('{{site_filepath}}/wp-content/themes/woow-theme/assets/vuejs');
@@ -145,13 +146,11 @@ class WoowRecipe extends WordpressRecipe
     }
 
 
-
     public function installRequirements()
     {
         parent::installRequirements();
         $this->installVue();
     }
-
 
 
     public function installVue()
@@ -163,9 +162,12 @@ class WoowRecipe extends WordpressRecipe
         $this->run('npm i -g @vue/cli-service-global', [
             'tty' => true
         ]);
-
     }
 
-
-
+    public function createVueApplication($name = 'frontend')
+    {
+        $this->run('vue create ' . $name, [
+            'tty' => true
+        ]);
+    }
 }
