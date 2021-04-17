@@ -119,7 +119,7 @@ class WordpressRecipe extends Recipe
 
 
         if(!$this->databaseExists()) {
-            $this->echo('Create database ' .  $this->get('DB_NAME'));
+            $this->echo('Create database ' .  $this->get('DB_NAME') . ' as ' . $this->get('DB_USER') . ' user');
             $this->createBDD(
                 $this->get('DB_HOST'),
                 $this->get('DB_USER'),
@@ -128,7 +128,7 @@ class WordpressRecipe extends Recipe
             );
         }
         else {
-            $this->echo('Database ' .  $this->get('DB_NAME') . 'exists');
+            $this->echo('Database ' .  $this->get('DB_NAME') . ' exists');
         }
 
         $this->deployWordpress();
@@ -277,11 +277,17 @@ define( 'NONCE_SALT',       '" . $this->get('NONCE_SALT') . "' );
 
     public function buildHtaccess()
     {
-        $this->cd('{{site_filepath}}');
-        $this->run('composer run activate-htaccess');
-        $this->run ("echo 'RewriteCond %{HTTP:Authorization} ^(.*)' >> ./.htaccess");
-        $this->run ("echo 'RewriteRule ^(.*) - [E=HTTP_AUTHORIZATION:%1]' >> ./.htaccess");
-        $this->run ("echo 'SetEnvIf Authorization \"(.*)\" HTTP_AUTHORIZATION=$1' >> ./.htaccess");
+        if(!$this->isFile('{{site_filepath}}/.htaccess')) {
+            $this->cd('{{site_filepath}}');
+            $this->run('composer run activate-htaccess');
+            $this->run ("echo 'RewriteCond %{HTTP:Authorization} ^(.*)' >> ./.htaccess");
+            $this->run ("echo 'RewriteRule ^(.*) - [E=HTTP_AUTHORIZATION:%1]' >> ./.htaccess");
+            $this->run ("echo 'SetEnvIf Authorization \"(.*)\" HTTP_AUTHORIZATION=$1' >> ./.htaccess");
+        }
+        else {
+            $this->echo('.htaccess file already exists');
+        }
+
         return $this;
     }
 
