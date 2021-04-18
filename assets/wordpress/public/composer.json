@@ -18,8 +18,9 @@
         "wpackagist-plugin/classic-editor": "*",
         "wpackagist-plugin/jwt-auth": "*",
         "wpackagist-plugin/user-role-editor": "*",
-        "wpackagist-plugin/fakerpress": "*"
-
+        "wpackagist-plugin/fakerpress": "*",
+        "wpackagist-plugin/custom-post-type-ui": "*",
+        "wpackagist-plugin/advanced-custom-fields": "*"
     },
 
     "scripts": {
