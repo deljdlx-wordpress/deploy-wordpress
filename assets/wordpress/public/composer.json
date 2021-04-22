@@ -21,7 +21,7 @@
         "wpackagist-plugin/fakerpress": "*",
         "wpackagist-plugin/custom-post-type-ui": "*",
         "wpackagist-plugin/advanced-custom-fields": "*",
-        "acf-to-rest-api": "*"
+        "wpackagist-plugin/acf-to-rest-api": "*"
     },
 
     "scripts": {
