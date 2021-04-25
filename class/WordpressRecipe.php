@@ -111,10 +111,32 @@ class WordpressRecipe extends Recipe
 
     public function scaffold()
     {
-
         $this->upload(__DIR__ . '/../assets/wordpress/public/', '{{site_filepath}}');
 
-        $this->echo('Working path : {{site_filepath}}');
+
+        $path = $this->ask('Base path', basename(getcwd()));
+        $this->set('site_document_root', 'http://localhost/' . $path);
+        $this->echo ('✔️ Base pash : ' .$this->get('site_document_root'));
+
+
+        $databaseHost = $this->ask('Database host ?', $this->get('DB_HOST'));
+        $this->set('DB_HOST', $databaseHost);
+        $this->echo ('✔️ Database host : ' .$this->get('DB_HOST'));
+
+        $databaseUserName = $this->ask('Database username ?', $this->get('DB_USER'));
+        $this->set('DB_USER', $databaseUserName);
+        $this->echo ('✔️ Database username : ' .$this->get('DB_USER'));
+
+        $databaseUserPassword = $this->ask('Database password ?', $this->get('DB_PASSWORD'));
+        $databaseName = $this->ask('Database name ?', $this->get('DB_NAME'));
+
+
+
+
+        $this->set('DB_PASSWORD', $databaseUserPassword);
+        $this->set('DB_NAME', $databaseName);
+
+
         $this->cd('{{site_filepath}}');
 
 
