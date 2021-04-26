@@ -130,7 +130,16 @@ class WordpressRecipe extends Recipe
         $databaseUserPassword = $this->ask('Database password ?', $this->get('DB_PASSWORD'));
         $databaseName = $this->ask('Database name ?', $this->get('DB_NAME'));
 
+        $boUser = $this->ask('Site admin login ?', $this->get('BO_USER'));
+        $this->set('BO_USER', $boUser);
+        $this->echo ('✔️ admin username : ' .$this->get('BO_USER'));
 
+        $boPassword = $this->ask('Site admin password ?', $this->get('BO_PASSWORD'));
+        $this->set('BO_PASSWORD', $boPassword);
+
+        $boEmail = $this->ask('Site admin email ?', $this->get('BO_EMAIL'));
+        $this->set('BO_EMAIL', $boEmail);
+        $this->echo ('✔️ admin email : ' .$this->get('BO_EMAIL'));
 
 
         $this->set('DB_PASSWORD', $databaseUserPassword);
