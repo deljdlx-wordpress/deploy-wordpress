@@ -54,14 +54,28 @@ class WoowRecipe extends WordpressRecipe
             $this->echo("updating woof package");
             $this->updatePlugin('woof');
         }
+
+
+
+        if (!$this->isDir('{{site_filepath}}/wp-content/plugins/woof-view') && !$force) {
+            $this->clonePlugin('git@github.com:deljdlx/woof-view.git');
+        }
+        else {
+            $this->echo("woof-view package already present");
+            $this->echo("updating woof-view package");
+            $this->updatePlugin('woof-view');
+        }
+
+
         if (!$this->isDir('{{site_filepath}}/wp-content/plugins/woof-model') && !$force) {
             $this->clonePlugin('git@github.com:deljdlx/woof-model.git');
         }
         else {
             $this->echo("woof-model package already present");
-            $this->echo("updating woof-them package");
-            $this->updatePlugin('woof-theme');
+            $this->echo("updating woof-model package");
+            $this->updatePlugin('woof-model');
         }
+
         if (!$this->isDir('{{site_filepath}}/wp-content/plugins/woof-theme') && !$force) {
             $this->clonePlugin('git@github.com:deljdlx/woof-theme.git');
         }
@@ -130,7 +144,7 @@ class WoowRecipe extends WordpressRecipe
         $this->installWoof($force);
         $this->installWoow($force);
         $this->installWoowTheme($force);
-        $this->buildWoowTheme();
+         $this->buildWoowTheme();
         $this->activateWoowTheme();
     }
 
