@@ -14,14 +14,7 @@
     "require": {
         "johnpbloch/wordpress": "^5.6",
         "wpackagist-theme/twentytwentyone": "^1.0",
-        "wpackagist-plugin/html-editor-syntax-highlighter": "*",
-        "wpackagist-plugin/classic-editor": "*",
-        "wpackagist-plugin/jwt-auth": "*",
-        "wpackagist-plugin/user-role-editor": "*",
-        "wpackagist-plugin/fakerpress": "*",
-        "wpackagist-plugin/custom-post-type-ui": "*",
-        "wpackagist-plugin/advanced-custom-fields": "*",
-        "wpackagist-plugin/acf-to-rest-api": "*"
+        "wpackagist-plugin/classic-editor": "*"
     },
 
     "scripts": {
@@ -32,16 +25,26 @@
         "chmod": [
             "sudo chgrp -R www-data .",
             "sudo find . -type f -exec chmod 664 {} +",
-            "sudo find . -type d -exec chmod 774 {} +",
+            "sudo find . -type d -exec chmod 775 {} +",
             "touch .htaccess",
             "sudo chgrp www-data .htaccess",
             "sudo chmod 774 .htaccess"
         ],
 
-        "wp-install-application-passwords": "wp plugin install application-passwords --activate",
         "wp-install-classic-editor": "wp plugin install classic-editor --activate",
-        "wp-install-jwt": "wp plugin install jwt-auth --activate",
-        "wp-install-jwt2": "wp plugin install jwt-authentication-for-wp-rest-api --activate"
+        "wp-install-html-editor-syntax-highlighter": "wp plugin install html-editor-syntax-highlighter --activate",
+
+
+        "wp-install-user-role-editor": "wp plugin install user-role-editor --activate",
+        "wp-install-view-admin-as": "wp plugin install view-admin-as --activate",
+        "wp-install-application-passwords": "wp plugin install application-passwords --activate",
+        "wp-install-jwt": "wp plugin install jwt-authentication-for-wp-rest-api --activate",
+
+
+        "wp-install-fakerpress": "wp plugin install fakerpress --activate",
+        "wp-install-custom-post-type-ui": "wp plugin install custom-post-type-ui --activate",
+        "wp-install-advanced-custom-fields": "wp plugin install advanced-custom-fields --activate",
+        "wp-install-acf-to-rest-api": "wp plugin install acf-to-rest-api --activate"
     }
 }
 
