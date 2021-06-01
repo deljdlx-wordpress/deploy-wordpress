@@ -8,6 +8,14 @@
     ],
 
     "extra": {
+        "installer-paths": {
+            "wp-content/plugins/{$name}/": [
+                "type:wordpress-plugin"
+            ],
+            "wp-content/themes/{$name}/": [
+                "type:wordpress-theme"
+            ]
+        },
         "wordpress-install-dir": "wp"
     },
 
@@ -24,7 +32,7 @@
         "activate-htaccess": "wp rewrite structure '/%year%/%monthnum%/%postname%/' --hard",
         "chmod": [
             "sudo chgrp -R www-data .",
-            "sudo find . -type f -exec chmod 664 {} +",
+            "sudo find . -type f -exec chmod 774 {} +",
             "sudo find . -type d -exec chmod 775 {} +",
             "touch .htaccess",
             "sudo chgrp www-data .htaccess",

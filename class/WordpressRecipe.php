@@ -111,12 +111,23 @@ class WordpressRecipe extends Recipe
 
     public function scaffold()
     {
-        $this->upload(__DIR__ . '/../assets/wordpress/public/', '{{site_filepath}}');
+
+        // $path = $this->ask('Base path', basename(getcwd()));
+        $path = $this->ask('Base path', '/');
 
 
-        $path = $this->ask('Base path', basename(getcwd()));
-        $this->set('site_document_root', 'http://localhost/' . $path);
-        $this->echo ('✔️ Base pash : ' .$this->get('site_document_root'));
+        $this->set('WP_HOME', 'http://{{hostname}}/' . ltrim($path, '/'));
+
+
+        $this->echo ('✔️ Site home URL : ' . $this->get('WP_HOME'));
+
+        $wordpressSourceFolder = $this->ask('Wordpress source folder', $this->get('WP_SOURCE_FOLDER'));
+        $this->set('WP_SOURCE_FOLDER', $wordpressSourceFolder);
+        $this->echo ('✔️ Wordpress source folder : ' .$this->get('WP_SOURCE_FOLDER'));
+
+        $wordpressContentFolder = $this->ask('Wordpress content folder', $this->get('WP_CONTENT_FOLDER'));
+        $this->set('WP_CONTENT_FOLDER', $wordpressContentFolder);
+        $this->echo ('✔️ Wordpress content folder : ' .$this->get('WP_CONTENT_FOLDER'));
 
 
         $databaseHost = $this->ask('Database host ?', $this->get('DB_HOST'));
@@ -145,6 +156,28 @@ class WordpressRecipe extends Recipe
         $this->set('DB_PASSWORD', $databaseUserPassword);
         $this->set('DB_NAME', $databaseName);
 
+
+
+        $this->set('site_filepath', $this->get('deploy_path') . '/' . $this->get('DOCUMENT_ROOT'));
+
+
+        // STEP scaffold copying template files
+
+        if(!$this->isDir('{{deploy_path}}')) {
+            $this->mkdir('{{deploy_path}}');
+        }
+
+
+        // STEP handling assets
+        $this->upload(__DIR__ . '/../assets/wordpress/public/', '{{site_filepath}}');
+
+        $this->replaceInFile('{{site_filepath}}/composer.json', 'wp-content/plugins/', $this->get('WP_CONTENT_FOLDER') . '/plugins/');
+        $this->replaceInFile('{{site_filepath}}/composer.json', 'wp-content/themes/', $this->get('WP_CONTENT_FOLDER') . '/themes/');
+        $this->replaceInFile('{{site_filepath}}/composer.json', '"wordpress-install-dir": "wp"', '"wordpress-install-dir": "' . $this->get('WP_SOURCE_FOLDER') . '"');
+
+
+        $this->replaceInFile('{{site_filepath}}/wp-cli.yml', 'path: wp', 'path: {{WP_SOURCE_FOLDER}}');
+        $this->replaceInFile('{{site_filepath}}/index.php', '/wp/wp-blog-header.php', '/{{WP_SOURCE_FOLDER}}/wp-blog-header.php');
 
         $this->cd('{{site_filepath}}');
 
@@ -181,11 +214,13 @@ class WordpressRecipe extends Recipe
         $this->echo('Install wordpress');
         $this->execute('installWordpress');
 
-        $this->echo('Execute chmod');
-        $this->execute('chmod');
 
         $this->echo('Create .htaccess');
         $this->execute('buildHtaccess');
+
+        $this->echo('Execute chmod');
+        $this->execute('chmod');
+
 
         // $this->echo('Activate all plugins');
         // $this->execute('activatePlugins');
@@ -218,19 +253,19 @@ class WordpressRecipe extends Recipe
 
     public function clonePlugin($gitUrl)
     {
-        $this->cd('{{site_filepath}}/wp-content/plugins');
+        $this->cd('{{site_filepath}}/' . $this->get('WP_CONTENT_FOLDER') . '/plugins');
         $this->run('git clone ' . $gitUrl, [
             'tty' => true
         ]);
 
         $pathName = str_replace('.git', '', basename($gitUrl));
 
-        $this->composerInstall('{{site_filepath}}/wp-content/plugins/' . $pathName);
+        $this->composerInstall('{{site_filepath}}/' . $this->get('WP_CONTENT_FOLDER') . '/plugins/' . $pathName);
     }
 
     public function updatePlugin($pluginPath)
     {
-        $this->cd('{{site_filepath}}/wp-content/plugins/' . $pluginPath);
+        $this->cd('{{site_filepath}}/' . $this->get('WP_CONTENT_FOLDER') . '/plugins/' . $pluginPath);
         $this->run('git pull ', [
             'tty' => true
         ]);
@@ -252,8 +287,12 @@ define( 'DB_CHARSET', '" . $this->get('DB_CHARSET') . "' );
 define( 'DB_COLLATE', '" . $this->get('DB_COLLATE') . "' );
 \$table_prefix = '" . $this->get('DB_TABLE_PREFIX') . "';
 
+
 define('WP_HOME', rtrim ( '" . $this->get('WP_HOME') . "', '/' ));
-define('WP_SITEURL', WP_HOME . '" . $this->get('WP_SOURCE_FOLDER') . "');
+define('WP_SITEURL', WP_HOME . '/" . $this->get('WP_SOURCE_FOLDER') . "');
+define('WP_CONTENT_DIR', __DIR__ . '/" . $this->get('WP_CONTENT_FOLDER'). "');
+define('WP_CONTENT_URL', WP_HOME . '/" . $this->get('WP_CONTENT_FOLDER'). "');
+
 
 define('JWT_AUTH_SECRET_KEY', '" . $this->get('JWT_AUTH_SECRET_KEY') . "');
 define('JWT_AUTH_CORS_ENABLE', " . $this->get('JWT_AUTH_CORS_ENABLE', true) . ");
@@ -287,7 +326,7 @@ define( 'NONCE_SALT',       '" . $this->get('NONCE_SALT') . "' );
     public function displayInformations()
     {
         $this->echo('Wordpress installed : ' . $this->get('WP_HOME'));
-        $this->echo('Backoffice : ' . rtrim($this->get('WP_HOME'), '/') . $this->get('WP_SOURCE_FOLDER') . '/wp-admin');
+        $this->echo('Backoffice : ' . rtrim($this->get('WP_HOME'), '/') . '/' . $this->get('WP_SOURCE_FOLDER') . '/wp-admin');
     }
 
     public function installWordpress($path, $home, $name, $login, $password, $email)
@@ -301,8 +340,14 @@ define( 'NONCE_SALT',       '" . $this->get('NONCE_SALT') . "' );
     public function chmod()
     {
         $this->cd('{{site_filepath}}');
-        $this->run('composer run chmod');
-        $this->run('sudo chmod -R 775 wp-content');
+
+        $this->run('composer run chmod', [
+            'tty' => true
+        ]);
+
+        $this->run('sudo chmod -R 775 ' . $this->get('WP_CONTENT_FOLDER'), [
+            'tty' => true
+        ]);
         return $this;
     }
 
