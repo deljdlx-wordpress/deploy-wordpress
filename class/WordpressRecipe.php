@@ -70,7 +70,7 @@ class WordpressRecipe extends Recipe
 
         $this->setTask('installWordpress', function() {
             return $this->installWordpress(
-                $this->get('site_filepath'),
+                $this->get('PUBLIC_FILEPATH'),
                 $this->get('WP_HOME'),
                 $this->get('SITE_NAME'),
                 $this->get('BO_USER'),
@@ -113,13 +113,13 @@ class WordpressRecipe extends Recipe
     {
 
         // $path = $this->ask('Base path', basename(getcwd()));
-        $path = $this->ask('Base path', '/');
+        $publicPath = $this->ask('Public folder', $this->get('PUBLIC_FOLDER'));
+        $this->set('PUBLIC_FOLDER', $publicPath);
 
 
-        $this->set('WP_HOME', 'http://{{hostname}}/' . ltrim($path, '/'));
-
-
+        $this->set('WP_HOME', '{{WP_HOME}}');
         $this->echo ('✔️ Site home URL : ' . $this->get('WP_HOME'));
+
 
         $wordpressSourceFolder = $this->ask('Wordpress source folder', $this->get('WP_SOURCE_FOLDER'));
         $this->set('WP_SOURCE_FOLDER', $wordpressSourceFolder);
@@ -158,28 +158,19 @@ class WordpressRecipe extends Recipe
 
 
 
-        $this->set('site_filepath', $this->get('deploy_path') . '/' . $this->get('DOCUMENT_ROOT'));
+        $this->set('PUBLIC_FILEPATH', $this->get('DEPLOY_FILEPATH') . '/' . $this->get('PUBLIC_FOLDER'));
 
 
         // STEP scaffold copying template files
 
-        if(!$this->isDir('{{deploy_path}}')) {
-            $this->mkdir('{{deploy_path}}');
+        if(!$this->isDir('{{DEPLOY_FILEPATH}}')) {
+            $this->mkdir('{{DEPLOY_FILEPATH}}');
         }
 
 
-        // STEP handling assets
-        $this->upload(__DIR__ . '/../assets/wordpress/public/', '{{site_filepath}}');
+        $this->buildConfigurations();
 
-        $this->replaceInFile('{{site_filepath}}/composer.json', 'wp-content/plugins/', $this->get('WP_CONTENT_FOLDER') . '/plugins/');
-        $this->replaceInFile('{{site_filepath}}/composer.json', 'wp-content/themes/', $this->get('WP_CONTENT_FOLDER') . '/themes/');
-        $this->replaceInFile('{{site_filepath}}/composer.json', '"wordpress-install-dir": "wp"', '"wordpress-install-dir": "' . $this->get('WP_SOURCE_FOLDER') . '"');
-
-
-        $this->replaceInFile('{{site_filepath}}/wp-cli.yml', 'path: wp', 'path: {{WP_SOURCE_FOLDER}}');
-        $this->replaceInFile('{{site_filepath}}/index.php', '/wp/wp-blog-header.php', '/{{WP_SOURCE_FOLDER}}/wp-blog-header.php');
-
-        $this->cd('{{site_filepath}}');
+        $this->cd('{{PUBLIC_FILEPATH}}');
 
 
         if(!$this->databaseExists()) {
@@ -199,6 +190,20 @@ class WordpressRecipe extends Recipe
 
         $this->echo('Generating gulp watch file into ' . getcwd());
         $this->generateGulpWatch($this->get('WP_HOME'), getcwd());
+    }
+
+    protected function buildConfigurations()
+    {
+        // STEP handling assets
+        $this->upload(__DIR__ . '/../assets/wordpress/public/', '{{PUBLIC_FILEPATH}}');
+
+        $this->replaceInFile('{{PUBLIC_FILEPATH}}/composer.json', 'wp-content/plugins/', $this->get('WP_CONTENT_FOLDER') . '/plugins/');
+        $this->replaceInFile('{{PUBLIC_FILEPATH}}/composer.json', 'wp-content/themes/', $this->get('WP_CONTENT_FOLDER') . '/themes/');
+        $this->replaceInFile('{{PUBLIC_FILEPATH}}/composer.json', '"wordpress-install-dir": "wp"', '"wordpress-install-dir": "' . $this->get('WP_SOURCE_FOLDER') . '"');
+
+
+        $this->replaceInFile('{{PUBLIC_FILEPATH}}/wp-cli.yml', 'path: wp', 'path: {{WP_SOURCE_FOLDER}}');
+        $this->replaceInFile('{{PUBLIC_FILEPATH}}/index.php', '/wp/wp-blog-header.php', '/{{WP_SOURCE_FOLDER}}/wp-blog-header.php');
     }
 
     public function deployWordpress()
@@ -242,30 +247,30 @@ class WordpressRecipe extends Recipe
 
     public function cloneTheme($gitUrl)
     {
-        $this->cd('{{site_filepath}}/wp-content/themes');
+        $this->cd('{{PUBLIC_FILEPATH}}/wp-content/themes');
         $this->run('git clone ' . $gitUrl, [
             'tty' => true
         ]);
 
         $pathName = str_replace('.git', '', basename($gitUrl));
-        $this->composerInstall('{{site_filepath}}/wp-content/plugins/' . $pathName);
+        $this->composerInstall('{{PUBLIC_FILEPATH}}/wp-content/plugins/' . $pathName);
     }
 
     public function clonePlugin($gitUrl)
     {
-        $this->cd('{{site_filepath}}/' . $this->get('WP_CONTENT_FOLDER') . '/plugins');
+        $this->cd('{{PUBLIC_FILEPATH}}/' . $this->get('WP_CONTENT_FOLDER') . '/plugins');
         $this->run('git clone ' . $gitUrl, [
             'tty' => true
         ]);
 
         $pathName = str_replace('.git', '', basename($gitUrl));
 
-        $this->composerInstall('{{site_filepath}}/' . $this->get('WP_CONTENT_FOLDER') . '/plugins/' . $pathName);
+        $this->composerInstall('{{PUBLIC_FILEPATH}}/' . $this->get('WP_CONTENT_FOLDER') . '/plugins/' . $pathName);
     }
 
     public function updatePlugin($pluginPath)
     {
-        $this->cd('{{site_filepath}}/' . $this->get('WP_CONTENT_FOLDER') . '/plugins/' . $pluginPath);
+        $this->cd('{{PUBLIC_FILEPATH}}/' . $this->get('WP_CONTENT_FOLDER') . '/plugins/' . $pluginPath);
         $this->run('git pull ', [
             'tty' => true
         ]);
@@ -309,7 +314,7 @@ define( 'LOGGED_IN_SALT',   '" . $this->get('LOGGED_IN_SALT') . "' );
 define( 'NONCE_SALT',       '" . $this->get('NONCE_SALT') . "' );
 ";
 
-        $this->write('{{site_filepath}}/configuration-current.php', $template);
+        $this->write('{{PUBLIC_FILEPATH}}/configuration-current.php', $template);
         return $this;
     }
 
@@ -317,7 +322,7 @@ define( 'NONCE_SALT',       '" . $this->get('NONCE_SALT') . "' );
 
     public function activatePlugins()
     {
-        $this->cd('{{site_filepath}}');
+        $this->cd('{{PUBLIC_FILEPATH}}');
         $this->run('composer run activate-plugins');
         return $this;
     }
@@ -339,7 +344,7 @@ define( 'NONCE_SALT',       '" . $this->get('NONCE_SALT') . "' );
 
     public function chmod()
     {
-        $this->cd('{{site_filepath}}');
+        $this->cd('{{PUBLIC_FILEPATH}}');
 
         $this->run('composer run chmod', [
             'tty' => true
@@ -353,8 +358,8 @@ define( 'NONCE_SALT',       '" . $this->get('NONCE_SALT') . "' );
 
     public function buildHtaccess()
     {
-        if(!$this->isFile('{{site_filepath}}/.htaccess')) {
-            $this->cd('{{site_filepath}}');
+        if(!$this->isFile('{{PUBLIC_FILEPATH}}/.htaccess')) {
+            $this->cd('{{PUBLIC_FILEPATH}}');
             $this->run('composer run activate-htaccess');
             $this->run ("echo 'RewriteCond %{HTTP:Authorization} ^(.*)' >> ./.htaccess");
             $this->run ("echo 'RewriteRule ^(.*) - [E=HTTP_AUTHORIZATION:%1]' >> ./.htaccess");

@@ -111,14 +111,10 @@ abstract class WordpressWorkbench extends Environment
     protected function configurePathes()
     {
         $this
-
-            ->set('deploy_path', getcwd())
-
-            ->set('DOCUMENT_ROOT', 'public')
-
+            ->set('DEPLOY_FILEPATH', getcwd())
+            ->set('PUBLIC_FOLDER', 'public')
             ->set('WP_SOURCE_FOLDER', 'wordpress')
             ->set('WP_CONTENT_FOLDER', 'content')
-
         ;
 
         return $this;
@@ -130,7 +126,7 @@ abstract class WordpressWorkbench extends Environment
     protected function configureURL()
     {
         $this
-            ->set('WP_HOME', 'http://{{hostname}}/' . $this->get('DOCUMENT_ROOT') . '/')
+            ->set('WP_HOME', 'http://{{hostname}}/' . $this->get('PUBLIC_FOLDER') . '/')
         ;
 
         return $this;
